@@ -382,8 +382,7 @@
             renderAdminScreenshots();
         };
 
-                
-                                // --- LÓGICA DE DESCARGA Y PUBLICIDAD ---
+                  // --- LÓGICA DE DESCARGA Y PUBLICIDAD ---
         let checkIframeClick; // Variable global para el evento
 
         window.startDownloadSequence = () => {
@@ -401,14 +400,15 @@
                     if (!adClicked) {
                         adClicked = true;
 
-                        // Damos un pequeño retraso para que el navegador procese la apertura del anuncio
+                        // Damos 1 segundo para que el navegador procese la apertura del anuncio
                         setTimeout(() => {
-                            // window.open es más confiable en móviles para forzar el aviso de descarga
-                            window.open(appData.apkLink, '_blank');
+                            // LA SOLUCIÓN: Usar window.location.href en lugar de window.open
+                            // Esto inicia la descarga en la ventana actual, evitando el bloqueador
+                            window.location.href = appData.apkLink;
                             
                             // Cerramos el modal
                             closeModals();
-                        }, 800);
+                        }, 1000);
                     }
                 }
             };
@@ -419,11 +419,12 @@
 
         window.closeModals = () => {
             document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-            // Muy importante: Limpiar el evento si el usuario le da a "CANCELAR" sin tocar el anuncio
+            // Muy importante: Limpiar el evento
             if (checkIframeClick) {
                 window.removeEventListener('blur', checkIframeClick);
             }
         };
+
 
     </script>
 </body>
