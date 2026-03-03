@@ -183,18 +183,35 @@
         </div>
     </div>
 
-    <div id="ad-modal" class="modal-overlay">
+            <div id="ad-modal" class="modal-overlay">
         <div class="modal-content" style="text-align:center;">
-            <h3 style="color:var(--primary); margin-top:0;">Apoyando el ministerio...</h3>
-            <p style="font-size:13px; color:var(--text-muted);">Tu descarga iniciará automáticamente en <span id="countdown" style="font-weight:bold; color:white;">3</span> segundos.</p>
+            <h3 style="color:var(--primary); margin-top:0;">Apoyando el servidor gratuito</h3>
             
-            <div style="background:#111; border:1px solid var(--border); height:150px; display:flex; align-items:center; justify-content:center; margin:20px 0;">
-                <span style="color:#555; font-size:12px;">[Aquí va tu iframe de publicidad]</span>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.5;">
+                <span style="font-size:16px; font-weight:bold; color:white;">👇 TOCA LA IMAGEN PARA DESCARGAR 👇</span><br><br>
+                Al hacer clic en la publicidad, se abrirá una pestaña. Solo omítela y la APK comenzará a descargarse automáticamente aquí.
+                <br><br>
+                <span style="color:#ffcc00; font-weight:bold;">⚠️ Alerta:</span> La APK no tiene virus. Como está fuera de la Play Store, tu teléfono puede mostrar una advertencia de seguridad.
+            </p>
+            
+            <div style="min-height:60px; display:flex; align-items:center; justify-content:center; margin:15px 0; overflow:hidden;">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '0f55b84e2574dd1c5bc05e9d410c8403',
+                        'format' : 'iframe',
+                        'height' : 50,
+                        'width' : 320,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="https://www.highperformanceformat.com/0f55b84e2574dd1c5bc05e9d410c8403/invoke.js"></script>
             </div>
 
-            <button class="btn-admin" style="background:transparent; border:1px solid #555; padding:8px;" onclick="closeModals()">CERRAR</button>
+            <button class="btn-admin" style="background:transparent; border:1px solid #555; padding:8px;" onclick="closeModals()">CANCELAR</button>
         </div>
     </div>
+
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -365,38 +382,40 @@
             renderAdminScreenshots();
         };
 
-        // --- LÓGICA DE DESCARGA Y PUBLICIDAD ---
+                
+                        // --- LÓGICA DE DESCARGA Y PUBLICIDAD ---
         window.startDownloadSequence = () => {
             if (!appData.apkLink) {
                 return alert("El administrador aún no ha subido el enlace de la APK.");
             }
-
             document.getElementById('ad-modal').style.display = 'flex';
             
-            let count = 3;
-            const counterEl = document.getElementById('countdown');
-            counterEl.innerText = count;
+            // Creamos un detector de clic sobre el área del anuncio
+            const adContainer = document.querySelector('#ad-modal div div:nth-child(3)'); 
+            
+            // Al detectar que el usuario toca el área donde está el iframe:
+            adContainer.onclick = () => {
+                // 1. Iniciamos la descarga inmediatamente
+                const a = document.createElement('a');
+                a.href = appData.apkLink;
+                a.download = ""; 
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
 
-            const interval = setInterval(() => {
-                count--;
-                counterEl.innerText = count;
-                if (count <= 0) {
-                    clearInterval(interval);
-                    // Fuerza la descarga creando un elemento <a>
-                    const a = document.createElement('a');
-                    a.href = appData.apkLink;
-                    a.download = ""; // Atributo para forzar descarga
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    counterEl.innerText = "¡Iniciada!";
-                }
-            }, 1000);
+                // 2. Cerramos el modal después de un breve delay
+                setTimeout(() => {
+                    closeModals();
+                }, 1500);
+            };
         };
 
         window.closeModals = () => {
             document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         };
+
+
     </script>
 </body>
 </html>
+
