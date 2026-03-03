@@ -195,7 +195,7 @@
             </p>
             
             <div style="min-height:60px; display:flex; align-items:center; justify-content:center; margin:15px 0; overflow:hidden;">
-                    <div id="adblock-modal" class="modal-overlay">
+                        <div id="adblock-modal" class="modal-overlay">
         <div class="modal-content" style="text-align:center;">
             <h3 style="color:#ff1744; margin-top:0;">⚠️ Bloqueador Detectado</h3>
             <p style="font-size:14px; color:var(--text-main); line-height:1.5;">
@@ -205,6 +205,7 @@
             <button class="btn-admin" style="background:#ff1744; margin-top:15px;" onclick="closeModals()">ENTENDIDO</button>
         </div>
     </div>
+
 
                 <script type="text/javascript">
                     atOptions = {
@@ -397,49 +398,70 @@
                   // --- LÓGICA DE DESCARGA Y PUBLICIDAD ---
         let checkIframeClick; // Variable global para el evento
 
-                window.startDownloadSequence = () => {
+                       window.startDownloadSequence = () => {
             if (!appData.apkLink) {
                 return alert("El administrador aún no ha subido el enlace de la APK.");
             }
             document.getElementById('ad-modal').style.display = 'flex';
             
-            // --- NUEVO: DETECCIÓN DE ADBLOCK ---
-            // Damos 2 segundos para que la red publicitaria intente inyectar el banner
+            // --- DETECCIÓN DE ADBLOCK Y TEMPORIZADOR DE 60 SEGUNDOS ---
             setTimeout(() => {
-                // Buscamos si el script logró crear el iframe del anuncio dentro de nuestro modal
                 const adIframe = document.querySelector('#ad-modal iframe');
                 
-                // Si el iframe no existe, o su tamaño es 0 (oculto por el bloqueador)
+                // Si el anuncio fue bloqueado
                 if (!adIframe || adIframe.clientHeight === 0 || window.getComputedStyle(adIframe).display === 'none') {
-                    // Ocultamos el modal de anuncios y mostramos la advertencia
+                    // Cambiar al modal del temporizador
                     document.getElementById('ad-modal').style.display = 'none';
                     document.getElementById('adblock-modal').style.display = 'flex';
+                    
+                    let timeLeft = 60; // 60 segundos de espera
+                    const timerElement = document.getElementById('adblock-timer');
+                    const waitBtn = document.getElementById('btn-adblock-wait');
+                    
+                    timerElement.innerText = timeLeft;
+                    
+                    // Iniciar el intervalo que resta 1 segundo cada vez
+                    const countdown = setInterval(() => {
+                        timeLeft--;
+                        timerElement.innerText = timeLeft;
+                        
+                        // Cuando el tiempo llega a cero
+                        if (timeLeft <= 0) {
+                            clearInterval(countdown); // Detener el reloj
+                            
+                            // Actualizar el botón visualmente
+                            waitBtn.innerText = "¡DESCARGANDO!";
+                            waitBtn.style.background = "var(--primary)";
+                            waitBtn.style.color = "#000";
+                            
+                            // Iniciar la descarga de la APK automáticamente
+                            window.location.href = appData.apkLink;
+                            
+                            // Cerrar el modal un poco después de iniciar la descarga
+                            setTimeout(() => {
+                                closeModals();
+                            }, 2000);
+                        }
+                    }, 1000); // Se ejecuta cada 1000ms (1 segundo)
                 }
-            }, 2000); // 2000 milisegundos = 2 segundos
-            // ------------------------------------
+            }, 2000); // 2 segundos para verificar si cargó el anuncio
+            // -----------------------------------------------------------
 
             let adClicked = false;
 
-            // Función que detecta si la página pierde el foco hacia el anuncio
+            // Función normal (cuando SÍ cargan los anuncios y hacen clic)
             checkIframeClick = () => {
-                // Verificamos si el elemento que recibió el clic/foco es un iframe
                 if (document.activeElement && document.activeElement.tagName.toLowerCase() === 'iframe') {
                     if (!adClicked) {
                         adClicked = true;
-
-                        // Damos 1 segundo para que el navegador procese la apertura del anuncio
                         setTimeout(() => {
-                            // Iniciamos la descarga en la ventana actual
                             window.location.href = appData.apkLink;
-                            
-                            // Cerramos el modal
                             closeModals();
                         }, 1000);
                     }
                 }
             };
 
-            // Escuchamos cuando la ventana pierde el enfoque
             window.addEventListener('blur', checkIframeClick);
         };
 
